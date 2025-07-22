@@ -43,6 +43,8 @@ class UploadResponse(BaseModel):
 
 class AnswerResponse(BaseModel):
     answer: str
+    reason: str
+    clause: str
     session_id: str
 
 # Simple session storage
@@ -110,10 +112,32 @@ def get_answer(question: str, session_id: str):
         
         # Create prompt
         prompt_template = """
-Answer the question based on the context. Keep answers short and direct.
+You are a helpful assistant that answers questions about insurance policies based on the provided context.
+
+Sample Query: "46M, knee surgery, Pune, 3-month policy"
+
+Sample Response: 
+{{
+    "answer": "Yes, knee surgery is covered under the policy.",
+    "reason": "",
+    "clause": "Refer to page 53 and line no 40."
+}}
+
+Please answer in the exact JSON format shown above based on the PDF text and the question asked. 
+Also consider the time frame and whether any waiting periods have been completed.
+If there is no waiting period, you can directly answer the question. yes or no 
+Also keep answers very short  
+give reason only if it is rejected or not covered by stating 
+"reason": "4-month waiting period not completed" or "It is not covered under the policy"
+Also give clauses like "Refer to page 53 and line no 40." everytime 
+Return a valid JSON response with the following format:
+{{
+    "answer": "",
+    "reason": "",
+    "clause": ""
+}}
 
 Context: {context}
-
 Question: {question}
 
 Answer:"""
@@ -138,16 +162,35 @@ Answer:"""
             "question": question
         })
         
-        answer = response.get("output_text", "No answer found")
+        # Extract response text
+        response_text = ""
+        if 'output_text' in response:
+            response_text = response['output_text']
+        else:
+            response_text = response.get('text', 'No response generated')
         
-        return {
-            "answer": answer,
-            "session_id": session_id
-        }
+        # Parse JSON response
+        try:
+            json_response = json.loads(response_text)
+            return {
+                "answer": json_response.get("answer", ""),
+                "reason": json_response.get("reason", ""),
+                "clause": json_response.get("clause", ""),
+                "session_id": session_id
+            }
+        except json.JSONDecodeError:
+            return {
+                "answer": response_text,
+                "reason": "",
+                "clause": "",
+                "session_id": session_id
+            }
         
     except Exception as e:
         return {
             "answer": f"Error: {str(e)}",
+            "reason": "",
+            "clause": "",
             "session_id": session_id
         }
 
