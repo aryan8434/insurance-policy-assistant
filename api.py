@@ -105,7 +105,7 @@ def get_conversation_chain():
     """
     
     model = ChatGoogleGenerativeAI(
-        model="gemini-pro",
+        model="gemini-1.5-flash",
         temperature=0.3,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
