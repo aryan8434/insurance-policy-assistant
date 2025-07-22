@@ -185,6 +185,9 @@ async def root():
     return {
         "message": "PDF Q&A API",
         "version": "2.0.0",
+        "status": "UPDATED_VERSION",
+        "model": "gemini-1.5-flash",
+        "features": ["optional_session_id", "auto_session_management"],
         "endpoints": {
             "upload": "/upload - Upload a PDF file",
             "ask": "/ask - Ask questions about uploaded PDFs",
