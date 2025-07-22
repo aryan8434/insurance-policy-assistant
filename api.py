@@ -6,6 +6,7 @@ import os
 import json
 import uuid
 import shutil
+import time
 from PyPDF2 import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -226,7 +227,7 @@ async def upload_pdf(file: UploadFile = File(...)):
             # Store session info
             active_sessions[session_id] = {
                 "filename": file.filename,
-                "created_at": os.time.time(),
+                "created_at": time.time(),
                 "text_length": len(text),
                 "chunks_count": len(text_chunks)
             }
